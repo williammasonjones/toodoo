@@ -18,12 +18,11 @@ class TooDooApp
   end
 
   def new_user
-    puts "Okay. Let's create a new user."
-    puts "What user name would you like?"
-    name = gets.chomp
+    say("Creating a new user:")
+    name = ask("Username?") { |q| q.validate = /\A\w+\Z/ }
     new_user = Toodoo::Models::User.create(:name => name)
     @user = new_user
-    puts "We've created your account and logged you in. Thanks #{@user.name}!"
+    say("We've created your account and logged you in. Thanks #{@user.name}!")
   end
 
   def login
@@ -40,7 +39,16 @@ class TooDooApp
   end
 
   def delete_user
-    puts "Are you *sure* you want to stop using this incredible todo service? (y/n)"
+    choices = 'yn'
+    delete = ask("Are you *sure* you want to stop using TooDoo?") do |q|
+      q.validate =/\A[#{choices}]\Z/
+      q.character = true
+      q.confirm = true
+    end
+    if delete == 'y'
+      @user.destroy
+      @user = nil
+    end
   end
 
   def new_todo_list
