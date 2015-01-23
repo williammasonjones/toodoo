@@ -18,15 +18,16 @@ class TooDooApp
   def new_user
     say("Creating a new user:")
     name = ask("Username?") { |q| q.validate = /\A\w+\Z/ }
-    new_user = Toodoo::User.create(:name => name)
-    @user = new_user
+    @user = Toodoo::User.create(:name => name)
     say("We've created your account and logged you in. Thanks #{@user.name}!")
   end
 
   def login
     choose do |menu|
+      menu.prompt = "Please choose an account: "
+
       Toodoo::User.find_each do |u|
-        menu.choice(u.id.to_sym, "Login as #{u.name}.") { @user = u }
+        menu.choice(u.name, "Login as #{u.name}.") { @user = u }
       end
 
       menu.choice(:back, "Just kidding, back to main menu!") do
@@ -51,16 +52,15 @@ class TooDooApp
 
   def new_todo_list
     # TODO: This should create a new todo list by getting input from the user.
-    # Primarily, it should have a title and user_id. This method should save
-    # the new todo list in the database and set @todos to the new list.
+    # The user should not have to tell you their id.
+    # Create the todo list in the database and update the @todos variable.
   end
 
   def pick_todo_list
     choose do |menu|
-      # TODO: Insert code to get the todo lists for the logged in user (@user).
+      # TODO: This should get get the todo lists for the logged in user (@user).
       # Iterate over them and add a menu.choice line as seen under the login method's
-      # find_each call. The result should set @todos to the todo list retrieved from
-      # the database.
+      # find_each call. The menu choice block should set @todos to the todo list.
 
       menu.choice(:back, "Just kidding, back to the main menu!") do
         say "You got it!"
@@ -70,22 +70,40 @@ class TooDooApp
   end
 
   def delete_todo_list
-
+    # TODO: This should confirm that the user wants to delete the todo list.
+    # If they do, it should destroy the current todo list and set @todos to nil.
   end
 
   def new_task
+    # TODO: This should create a new task on the current user's todo list.
+    # It must take any necessary input from the user. A due date is optional.
   end
 
+  ## NOTE: For the next 3 methods, make sure the change is saved to the database.
   def mark_done
+    # TODO: This should display the todos on the current list in a menu
+    # similarly to pick_todo_list. Once they select a todo, the menu choice block
+    # should update the todo to be completed.
   end
 
   def change_due_date
+    # TODO: This should display the todos on the current list in a menu
+    # similarly to pick_todo_list. Once they select a todo, the menu choice block
+    # should update the due date for the todo. You probably want to use
+    # `ask("foo", Date)` here.
   end
 
   def edit_task
+    # TODO: This should display the todos on the current list in a menu
+    # similarly to pick_todo_list. Once they select a todo, the menu choice block
+    # should change the name of the todo.
   end
 
   def show_overdue
+    # TODO: This should print a sorted list of todos with a due date *older*
+    # than `Date.now`. They should be formatted as follows:
+    # "Date -- Eat a Cookie"
+    # "Older Date -- Play with Puppies"
   end
 
   def run
@@ -128,6 +146,8 @@ class TooDooApp
     end
   end
 end
+
+binding.pry
 
 todos = TooDooApp.new
 todos.run
