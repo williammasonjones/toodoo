@@ -4,9 +4,7 @@ require 'highline/import'
 require 'pry'
 
 module Toodoo
-  module Models
-    class User < ActiveRecord::Base
-    end
+  class User < ActiveRecord::Base
   end
 end
 
@@ -20,14 +18,14 @@ class TooDooApp
   def new_user
     say("Creating a new user:")
     name = ask("Username?") { |q| q.validate = /\A\w+\Z/ }
-    new_user = Toodoo::Models::User.create(:name => name)
+    new_user = Toodoo::User.create(:name => name)
     @user = new_user
     say("We've created your account and logged you in. Thanks #{@user.name}!")
   end
 
   def login
     choose do |menu|
-      Toodoo::Models::User.find_each do |u|
+      Toodoo::User.find_each do |u|
         menu.choice(u.id.to_sym, "Login as #{u.name}.") { @user = u }
       end
 
