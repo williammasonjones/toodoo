@@ -5,7 +5,18 @@ require 'pry'
 
 module Toodoo
   class User < ActiveRecord::Base
+    has_many :lists
   end
+
+  class List < ActiveRecord::Base
+    belongs_to :user
+    has_many :items
+  end
+
+  class Item < ActiveRecord::Base
+    belongs_to :list
+  end
+
 end
 
 class TooDooApp
@@ -110,8 +121,8 @@ class TooDooApp
     puts "Welcome to your personal TooDoo app."
     loop do
       choose do |menu|
-        menu.layout = :menu_only
-        menu.shell = true
+        #menu.layout = :menu_only
+        #menu.shell = true
 
         # Are we logged in yet?
         unless @user
@@ -147,7 +158,7 @@ class TooDooApp
   end
 end
 
-binding.pry
+#binding.pry
 
 todos = TooDooApp.new
 todos.run
