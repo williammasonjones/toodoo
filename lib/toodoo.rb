@@ -61,18 +61,23 @@ class TooDooApp
     end
   end
 
+  # Creates a new todo list
+  # Creates the list in the db
   def new_todo_list
-    # TODO: This should create a new todo list by getting input from the user.
-    # The user should not have to tell you their id.
-    # Create the todo list in the database and update the @todos variable.
+    say("Create a new todo list:")
+    title = ask("Please enter a name for your list"){ |q| q.validate = /\A\w+\z/ }
+    @todos = Toodoo::List.create(:title => title, :user_id => user.id)
+    say("#{user.name}, your new list has successfully been created!")
   end
 
+  # Gets todo lists for the user
+  # Selects list
   def pick_todo_list
     choose do |menu|
-      # TODO: This should get get the todo lists for the logged in user (@user).
-      # Iterate over them and add a menu.choice line as seen under the login method's
-      # find_each call. The menu choice block should set @todos to the todo list.
-
+      menu.prompt = "Please select a list:"
+        Toodoo::List.where(:user_id => user_id).find_each do |l|
+          menu.choice(l.title, "Select the #{l.title} todo list") {@todos = l}
+      end
       menu.choice(:back, "Just kidding, back to the main menu!") do
         say "You got it!"
         @todos = nil
@@ -80,14 +85,32 @@ class TooDooApp
     end
   end
 
+  # Confirm list to be deleted
+  # Destroy list & set @todos to nil
   def delete_todo_list
-    # TODO: This should confirm that the user wants to delete the todo list.
-    # If they do, it should destroy the current todo list and set @todos to nil.
+    choose do |menu|
+      menu.prompt = "Please select a list to delete"
+        Toodoo::List.where(:user_id => user_id).find_each do |l|
+          menu.choice(l.title, "Select the #{l.title} todo list") {@todos = l}
+      end
+    end
+    choices = 'yn'
+    delete = ask("This list will now be deleted. Are you sure?") do |q|
+      q.validate = /A\[#{choices}]\Z/
+      q.character = true
+      q.confirm = true
+    end
+    if delete == 'y'
+      @todos.destroy
+      @todos = nil
+    end
   end
 
+  # Creates a new task(item) on todo list.
   def new_task
-    # TODO: This should create a new task on the current user's todo list.
-    # It must take any necessary input from the user. A due date is optional.
+    say("Create a new todo item:")
+    input = ask("Item name?")
+    Toodoo::Item.create{:name => input, :finished => false, :list_id => list.id}
   end
 
   ## NOTE: For the next 3 methods, make sure the change is saved to the database.
@@ -95,6 +118,14 @@ class TooDooApp
     # TODO: This should display the todos on the current list in a menu
     # similarly to pick_todo_list. Once they select a todo, the menu choice block
     # should update the todo to be completed.
+    choose do |menu|
+      menu.prompt = "Yay! You completed a task!"
+      Toodoo::Item.where(:list_id => @todos.id, :completed => false).each do |i|
+        menu.choice(i.name, "Pick the #{i.name} item.") {i.update(:completed => true)}
+        i.save
+      end
+      menu.choice(:back)
+    end
   end
 
   def change_due_date
